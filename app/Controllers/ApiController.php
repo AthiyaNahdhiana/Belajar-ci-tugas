@@ -12,7 +12,7 @@ use App\Models\TransactionDetailModel;
 
 class ApiController extends ResourceController
 {
-    protected $apiKey ="ef635XbLi09420MgcvNp00";
+    protected $apiKey ="enter_apiKey";
     protected $user;
     protected $transaction;
     protected $transaction_detail;
