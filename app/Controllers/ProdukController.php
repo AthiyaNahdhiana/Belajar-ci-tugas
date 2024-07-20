@@ -26,6 +26,39 @@ class ProdukController extends BaseController
     public function create()
 {
     $dataFoto = $this->request->getFile('foto');
+    $dataForm = [
+        'nama' => $this->request->getPost('nama'),
+        'harga' => $this->request->getPost('harga'),
+        'jumlah' => $this->request->getPost('jumlah'),
+        'created_at' => date("Y-m-d H:i:s")
+    ];
+
+    if ($this->request->getPost()) {
+        $rules = [
+            'nama' => 'required|min_length[5]',
+            'harga' => 'required|numeric',
+            'jumlah' => 'required|numeric',
+        ];
+
+        if ($this->validate($rules)) {
+            if ($dataFoto->isValid()) {
+                $fileName = $dataFoto->getRandomName();
+                $dataForm['foto'] = $fileName;
+                $dataFoto->move('img/', $fileName);
+            }
+
+            $this->product->insert($dataForm);
+            return redirect('produk')->with('success', 'Data Berhasil Ditambah');
+        } else {
+            session()->setFlashdata('failed', $this->validator->listErrors());
+            return redirect()->back();
+        }
+    }
+}
+
+public function edit($id)
+{
+    $dataProduk = $this->product->find($id);
 
     $dataForm = [
         'nama' => $this->request->getPost('nama'),
@@ -34,45 +67,37 @@ class ProdukController extends BaseController
         'created_at' => date("Y-m-d H:i:s")
     ];
 
-    if ($dataFoto->isValid()) {
-        $fileName = $dataFoto->getRandomName();
-        $dataForm['foto'] = $fileName;
-        $dataFoto->move('img/', $fileName);
-    }
+    if ($this->request->getPost()) {
+        $rules = [
+            'nama' => 'required|min_length[5]',
+            'harga' => 'required|numeric',
+            'jumlah' => 'required|numeric',
+        ];
 
-    $this->product->insert($dataForm);
+        if ($this->validate($rules)) {
+            if ($this->request->getPost('check') == 1) {
+                if ($dataProduk['foto'] != '' && file_exists("img/" . $dataProduk['foto'])) {
+                    unlink("img/" . $dataProduk['foto']);
+                }
 
-    return redirect('produk')->with('success', 'Data Berhasil Ditambah');
-    } 
-    public function edit($id)
-{
-    $dataProduk = $this->product->find($id);
+                $dataFoto = $this->request->getFile('foto');
 
-    $dataForm = [
-        'nama' => $this->request->getPost('nama'),
-        'harga' => $this->request->getPost('harga'),
-        'jumlah' => $this->request->getPost('jumlah'),
-        'updated_at' => date("Y-m-d H:i:s")
-    ];
+                if ($dataFoto->isValid()) {
+                    $fileName = $dataFoto->getRandomName();
+                    $dataFoto->move('img/', $fileName);
+                    $dataForm['foto'] = $fileName;
+                }
+            }
 
-    if ($this->request->getPost('check') == 1) {
-        if ($dataProduk['foto'] != '' and file_exists("img/" . $dataProduk['foto'] . "")) {
-            unlink("img/" . $dataProduk['foto']);
-        }
-
-        $dataFoto = $this->request->getFile('foto');
-
-        if ($dataFoto->isValid()) {
-            $fileName = $dataFoto->getRandomName();
-            $dataFoto->move('img/', $fileName);
-            $dataForm['foto'] = $fileName;
+            $this->product->update($id, $dataForm);
+            return redirect('produk')->with('success', 'Data Berhasil Diubah');
+        } else {
+            session()->setFlashdata('failed', $this->validator->listErrors());
+            return redirect()->back();
         }
     }
+}
 
-    $this->product->update($id, $dataForm);
-
-    return redirect('produk')->with('success', 'Data Berhasil Diubah');
-    }
 
     public function delete($id)
 {
@@ -110,4 +135,6 @@ class ProdukController extends BaseController
     // output the generated pdf
     $dompdf->stream($filename);
 }
+
+
 }

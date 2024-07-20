@@ -28,6 +28,11 @@ $routes->group('keranjang', ['filter' => 'auth'], function ($routes) {
     $routes->get('clear', 'TransaksiController::cart_clear');
 });
 
+$routes->group('transaksi', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'TransaksiController::transaksi');
+    $routes->post('edit/(:any)', 'TransaksiController::edit_status/$1');
+    $routes->get('download', 'TransaksiController::download');
+} );
 $routes->get('checkout', 'TransaksiController::checkout', ['filter' => 'auth']);
 $routes->get('getcity', 'TransaksiController::getcity', ['filter' => 'auth']);
 $routes->get('getcost', 'TransaksiController::getcost', ['filter' => 'auth']);
@@ -37,6 +42,8 @@ $routes->get('profile', 'Home::profile', ['filter' => 'auth']);
 $routes->get('faq', 'Home::faq', ['filter' => 'auth']);
 $routes->get('contact', 'Home::contact', ['filter' => 'auth']);
 
+
 $routes->group('api', function ($routes) {
     $routes->post('monthly', 'ApiController::monthly');
+    $routes->post('yearly', 'ApiController::yearly');
 });
